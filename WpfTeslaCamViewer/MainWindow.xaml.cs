@@ -70,6 +70,16 @@ namespace WpfTeslaCamViewer
             PlayerInfoTimer.Start();
         }
 
+        private void btn_GoBack_Click(object sender, RoutedEventArgs e)
+        {
+            player?.SkipBack();
+        }
+
+        private void btn_GoForward_Click(object sender, RoutedEventArgs e)
+        {
+            player?.SkipForward();
+        }
+
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             Core.Initialize();

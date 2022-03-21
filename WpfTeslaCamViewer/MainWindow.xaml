@@ -27,11 +27,15 @@
             <Label x:Name="lbl_DebugInfo" />
             <Label Content="Playback speed:"/>
             <StackPanel FlowDirection="LeftToRight">
-                <Button x:Name="btn_SlowDown" Content="-" DockPanel.Dock="Left" Click="btn_SlowDown_Click" />
+                <Button x:Name="btn_SlowDown" Content="-" Click="btn_SlowDown_Click" />
                 <Label x:Name="lbl_playbackspeed" Content="1" HorizontalAlignment="Center" />
-                <Button x:Name="btn_SpeedUp" Content="+" DockPanel.Dock="Right" Click="btn_SpeedUp_Click"/>
+                <Button x:Name="btn_SpeedUp" Content="+" Click="btn_SpeedUp_Click"/>
             </StackPanel>
             <Slider x:Name="slider_progress" PreviewMouseDown="slider_progress_PreviewMouseDown" PreviewMouseUp="slider_progress_PreviewMouseUp" Maximum="1" SmallChange="0.01" TickFrequency="0.1" />
+            <StackPanel FlowDirection="LeftToRight">
+                <Button x:Name="btn_GoBack" Content="&lt;" Click="btn_GoBack_Click" />
+                <Button x:Name="btn_GoForward" Content="&gt;" Click="btn_GoForward_Click" />
+            </StackPanel>
         </StackPanel>
     </Grid>
 </Window>

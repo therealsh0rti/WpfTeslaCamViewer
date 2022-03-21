@@ -45,6 +45,8 @@ namespace WpfTeslaCamViewer
             indexFront += 1;
             if (filesFront != null && indexFront < filesFront.Count && indexFront >= 0)
                 ThreadPool.QueueUserWorkItem(_ => playerFront.Play(new Media(this.vlc, new Uri(filesFront[indexFront].FullName))));
+            else
+                ThreadPool.QueueUserWorkItem(_ => playerFront.Stop());
         }
 
         private void PlayerLeft_PlayNext(object? sender, EventArgs? e)
@@ -52,6 +54,8 @@ namespace WpfTeslaCamViewer
             indexLeft += 1;
             if (filesLeft != null && indexLeft < filesLeft.Count && indexLeft >= 0)
                 ThreadPool.QueueUserWorkItem(_ => playerLeft.Play(new Media(this.vlc, new Uri(filesLeft[indexLeft].FullName))));
+            else
+                ThreadPool.QueueUserWorkItem(_ => playerLeft.Stop());
         }
 
         private void PlayerRight_PlayNext(object? sender, EventArgs? e)
@@ -59,6 +63,8 @@ namespace WpfTeslaCamViewer
             indexRight += 1;
             if (filesRight != null && indexRight < filesRight.Count && indexRight >= 0)
                 ThreadPool.QueueUserWorkItem(_ => playerRight.Play(new Media(this.vlc, new Uri(filesRight[indexRight].FullName))));
+            else
+                ThreadPool.QueueUserWorkItem(_ => playerRight.Stop());
         }
 
         private void PlayerBack_PlayNext(object? sender, EventArgs? e)
@@ -66,6 +72,8 @@ namespace WpfTeslaCamViewer
             indexBack += 1;
             if (filesBack != null && indexBack < filesBack.Count && indexBack >= 0)
                 ThreadPool.QueueUserWorkItem(_ => playerBack.Play(new Media(this.vlc, new Uri(filesBack[indexBack].FullName))));
+            else
+                ThreadPool.QueueUserWorkItem(_ => playerBack.Stop());
         }
 
         public bool Play(string Path)
@@ -88,10 +96,7 @@ namespace WpfTeslaCamViewer
                     return false;
                 else
                 {
-                    PlayerFront_PlayNext(null, null);
-                    PlayerLeft_PlayNext(null, null);
-                    PlayerRight_PlayNext(null, null);
-                    PlayerBack_PlayNext(null, null);
+                    SkipForward();
 
                     return true;
                 }
@@ -105,7 +110,7 @@ namespace WpfTeslaCamViewer
             StringBuilder sb = new();
 
             sb.Append("Front: ");
-            sb.Append(indexFront);
+            sb.Append(indexFront + 1);
             sb.Append('/');
             sb.Append(filesFront?.Count.ToString() ?? "0");
             sb.Append(' ');
@@ -115,7 +120,7 @@ namespace WpfTeslaCamViewer
             sb.AppendLine("s");
 
             sb.Append("Left: ");
-            sb.Append(indexLeft);
+            sb.Append(indexLeft + 1);
             sb.Append('/');
             sb.Append(filesLeft?.Count.ToString() ?? "0");
             sb.Append(' ');
@@ -125,7 +130,7 @@ namespace WpfTeslaCamViewer
             sb.AppendLine("s");
 
             sb.Append("Right: ");
-            sb.Append(indexRight);
+            sb.Append(indexRight + 1);
             sb.Append('/');
             sb.Append(filesRight?.Count.ToString() ?? "0");
             sb.Append(' ');
@@ -135,7 +140,7 @@ namespace WpfTeslaCamViewer
             sb.AppendLine("s");
 
             sb.Append("Back: ");
-            sb.Append(indexBack);
+            sb.Append(indexBack + 1);
             sb.Append('/');
             sb.Append(filesBack?.Count.ToString() ?? "0");
             sb.Append(' ');
@@ -158,6 +163,24 @@ namespace WpfTeslaCamViewer
             playerLeft.Position = pos;
             playerRight.Position = pos;
             playerBack.Position = pos;
+        }
+
+        public void SkipBack()
+        {
+            //lol
+            this.indexFront -= 2;
+            this.indexLeft -= 2;
+            this.indexRight -= 2;
+            this.indexBack -= 2;
+            SkipForward();
+        }
+
+        public void SkipForward()
+        {
+            PlayerFront_PlayNext(null, null);
+            PlayerLeft_PlayNext(null, null);
+            PlayerRight_PlayNext(null, null);
+            PlayerBack_PlayNext(null, null);
         }
     }
 }
