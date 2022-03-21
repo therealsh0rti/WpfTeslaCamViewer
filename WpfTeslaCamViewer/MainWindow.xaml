@@ -31,6 +31,7 @@
                 <Label x:Name="lbl_playbackspeed" Content="1" HorizontalAlignment="Center" />
                 <Button x:Name="btn_SpeedUp" Content="+" DockPanel.Dock="Right" Click="btn_SpeedUp_Click"/>
             </StackPanel>
+            <Slider x:Name="slider_progress" PreviewMouseDown="slider_progress_PreviewMouseDown" PreviewMouseUp="slider_progress_PreviewMouseUp" Maximum="1" SmallChange="0.01" TickFrequency="0.1" />
         </StackPanel>
     </Grid>
 </Window>

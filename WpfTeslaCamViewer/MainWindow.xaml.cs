@@ -1,18 +1,7 @@
 ﻿using LibVLCSharp.Shared;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Timers;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace WpfTeslaCamViewer
 {
@@ -25,11 +14,28 @@ namespace WpfTeslaCamViewer
         LibVLCSharp.Shared.MediaPlayer? playerFront, playerLeft, playerRight, playerBack;
         TeslaCamPlayer? player;
         float playbackSpeed;
+        Timer PlayerInfoTimer;
 
         public MainWindow()
         {
             InitializeComponent();
             playbackSpeed = 1f;
+            PlayerInfoTimer = new(500);
+            PlayerInfoTimer.Elapsed += async (object? sender, ElapsedEventArgs e) =>
+            {
+                if (player != null)
+                {
+                    string info = player.GetDebugInfo();
+
+                    float Position = player.GetCurrentVideoPosition();
+
+                    await Application.Current.Dispatcher.BeginInvoke(() => { 
+                        lbl_DebugInfo.Content = info;
+                        slider_progress.Value = Position;
+                    });
+                }
+            };
+            PlayerInfoTimer.Start();
         }
 
         private void btn_SlowDown_Click(object sender, RoutedEventArgs e)
@@ -46,11 +52,22 @@ namespace WpfTeslaCamViewer
 
         private void SetPlaybackRate()
         {
-            lbl_playbackspeed.Content = playbackSpeed.ToString();
+            lbl_playbackspeed.Content = Math.Round(playbackSpeed, 1).ToString();
             playerFront?.SetRate(playbackSpeed);
             playerLeft?.SetRate(playbackSpeed);
             playerRight?.SetRate(playbackSpeed);
             playerBack?.SetRate(playbackSpeed);
+        }
+
+        private void slider_progress_PreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            PlayerInfoTimer.Stop();
+        }
+
+        private void slider_progress_PreviewMouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            player?.SetPosition((float)slider_progress.Value);
+            PlayerInfoTimer.Start();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -69,7 +86,6 @@ namespace WpfTeslaCamViewer
             videoViewRear.MediaPlayer = playerBack;
 
             player = new(_libVLC, playerFront, playerLeft, playerRight, playerBack);
-            player.SetDebugInfoAction(async info => await Application.Current.Dispatcher.BeginInvoke(() => lbl_DebugInfo.Content = info));
 
             UpdateWindowTitle("No directory opened");
         }

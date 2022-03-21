@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace WpfTeslaCamViewer
 {
@@ -15,8 +14,6 @@ namespace WpfTeslaCamViewer
         LibVLCSharp.Shared.MediaPlayer playerFront, playerLeft, playerRight, playerBack;
         List<FileInfo>? filesFront, filesLeft, filesRight, filesBack;
         int indexFront, indexLeft, indexRight, indexBack;
-
-        Action<string>? DebugInfoAction;
 
         public TeslaCamPlayer(LibVLC vlc, MediaPlayer playerFront, MediaPlayer playerLeft, MediaPlayer playerRight, MediaPlayer playerBack)
         {
@@ -41,48 +38,34 @@ namespace WpfTeslaCamViewer
             this.indexLeft = -1;
             this.indexRight = -1;
             this.indexBack = -1;
-
-            UpdateDebugInfo();
         }
 
         private void PlayerFront_PlayNext(object? sender, EventArgs? e)
         {
             indexFront += 1;
             if (filesFront != null && indexFront < filesFront.Count && indexFront >= 0)
-            {
-                UpdateDebugInfo();
                 ThreadPool.QueueUserWorkItem(_ => playerFront.Play(new Media(this.vlc, new Uri(filesFront[indexFront].FullName))));
-            }
         }
 
         private void PlayerLeft_PlayNext(object? sender, EventArgs? e)
         {
             indexLeft += 1;
             if (filesLeft != null && indexLeft < filesLeft.Count && indexLeft >= 0)
-            {
-                UpdateDebugInfo();
                 ThreadPool.QueueUserWorkItem(_ => playerLeft.Play(new Media(this.vlc, new Uri(filesLeft[indexLeft].FullName))));
-            }
         }
 
         private void PlayerRight_PlayNext(object? sender, EventArgs? e)
         {
             indexRight += 1;
             if (filesRight != null && indexRight < filesRight.Count && indexRight >= 0)
-            {
-                UpdateDebugInfo();
                 ThreadPool.QueueUserWorkItem(_ => playerRight.Play(new Media(this.vlc, new Uri(filesRight[indexRight].FullName))));
-            }
         }
 
         private void PlayerBack_PlayNext(object? sender, EventArgs? e)
         {
             indexBack += 1;
             if (filesBack != null && indexBack < filesBack.Count && indexBack >= 0)
-            {
-                UpdateDebugInfo();
                 ThreadPool.QueueUserWorkItem(_ => playerBack.Play(new Media(this.vlc, new Uri(filesBack[indexBack].FullName))));
-            }
         }
 
         public bool Play(string Path)
@@ -117,39 +100,64 @@ namespace WpfTeslaCamViewer
                 return false;
         }
 
-        protected void UpdateDebugInfo()
+        public string GetDebugInfo()
         {
-            if (DebugInfoAction != null)
-            {
-                StringBuilder sb = new();
+            StringBuilder sb = new();
 
-                sb.Append("Front: ");
-                sb.Append(indexFront);
-                sb.Append('/');
-                sb.AppendLine(filesFront?.Count.ToString() ?? "0");
+            sb.Append("Front: ");
+            sb.Append(indexFront);
+            sb.Append('/');
+            sb.Append(filesFront?.Count.ToString() ?? "0");
+            sb.Append(' ');
+            sb.Append(Math.Round(playerFront.Position * playerFront.Length / 1000, 1));
+            sb.Append("s / ");
+            sb.Append(playerFront.Length / 1000);
+            sb.AppendLine("s");
 
-                sb.Append("Left: ");
-                sb.Append(indexLeft);
-                sb.Append('/');
-                sb.AppendLine(filesLeft?.Count.ToString() ?? "0");
+            sb.Append("Left: ");
+            sb.Append(indexLeft);
+            sb.Append('/');
+            sb.Append(filesLeft?.Count.ToString() ?? "0");
+            sb.Append(' ');
+            sb.Append(Math.Round(playerLeft.Position * playerLeft.Length / 1000, 1));
+            sb.Append("s / ");
+            sb.Append(playerLeft.Length / 1000);
+            sb.AppendLine("s");
 
-                sb.Append("Right: ");
-                sb.Append(indexRight);
-                sb.Append('/');
-                sb.AppendLine(filesRight?.Count.ToString() ?? "0");
+            sb.Append("Right: ");
+            sb.Append(indexRight);
+            sb.Append('/');
+            sb.Append(filesRight?.Count.ToString() ?? "0");
+            sb.Append(' ');
+            sb.Append(Math.Round(playerRight.Position * playerRight.Length / 1000, 1));
+            sb.Append("s / ");
+            sb.Append(playerRight.Length / 1000);
+            sb.AppendLine("s");
 
-                sb.Append("Back: ");
-                sb.Append(indexBack);
-                sb.Append('/');
-                sb.AppendLine(filesBack?.Count.ToString() ?? "0");
+            sb.Append("Back: ");
+            sb.Append(indexBack);
+            sb.Append('/');
+            sb.Append(filesBack?.Count.ToString() ?? "0");
+            sb.Append(' ');
+            sb.Append(Math.Round(playerBack.Position * playerBack.Length / 1000, 1));
+            sb.Append("s / ");
+            sb.Append(playerBack.Length / 1000);
+            sb.AppendLine("s");
 
-                this.DebugInfoAction(sb.ToString());
-            }
+            return sb.ToString();
         }
 
-        public void SetDebugInfoAction(Action<string> action)
+        public float GetCurrentVideoPosition()
         {
-            this.DebugInfoAction = action;
+            return playerFront.Position;
+        }
+
+        public void SetPosition(float pos)
+        {
+            playerFront.Position = pos;
+            playerLeft.Position = pos;
+            playerRight.Position = pos;
+            playerBack.Position = pos;
         }
     }
 }
