@@ -22,11 +22,13 @@ namespace WpfTeslaCamViewer
     public partial class MainWindow : Window
     {
         LibVLC? _libVLC;
-        LibVLCSharp.Shared.MediaPlayer? _mediaPlayer, _mediaPlayer2, _mediaPlayer3, _mediaPlayer4;
+        LibVLCSharp.Shared.MediaPlayer? playerFront, playerLeft, playerRight, playerBack;
+        TeslaCamPlayer player;
 
         public MainWindow()
         {
             InitializeComponent();
+            player = null;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -34,20 +36,18 @@ namespace WpfTeslaCamViewer
             Core.Initialize();
 
             _libVLC = new LibVLC();
-            _mediaPlayer = new LibVLCSharp.Shared.MediaPlayer(_libVLC);
-            _mediaPlayer2 = new LibVLCSharp.Shared.MediaPlayer(_libVLC);
-            _mediaPlayer3 = new LibVLCSharp.Shared.MediaPlayer(_libVLC);
-            _mediaPlayer4 = new LibVLCSharp.Shared.MediaPlayer(_libVLC);
+            playerFront = new LibVLCSharp.Shared.MediaPlayer(_libVLC);
+            playerLeft = new LibVLCSharp.Shared.MediaPlayer(_libVLC);
+            playerRight = new LibVLCSharp.Shared.MediaPlayer(_libVLC);
+            playerBack = new LibVLCSharp.Shared.MediaPlayer(_libVLC);
 
-            videoViewFront.MediaPlayer = _mediaPlayer;
-            videoViewLeftRepeater.MediaPlayer = _mediaPlayer2;
-            videoViewRightRepeater.MediaPlayer = _mediaPlayer3;
-            videoViewRear.MediaPlayer = _mediaPlayer4;
+            videoViewFront.MediaPlayer = playerFront;
+            videoViewLeftRepeater.MediaPlayer = playerLeft;
+            videoViewRightRepeater.MediaPlayer = playerRight;
+            videoViewRear.MediaPlayer = playerBack;
 
-            _mediaPlayer.Play(new Media(_libVLC, new Uri(@"C:\Users\sh0rt\Videos\TeslaCam\2022-03-19_17-56-03\2022-03-19_17-44-54-front.mp4")));
-            _mediaPlayer2.Play(new Media(_libVLC, new Uri(@"C:\Users\sh0rt\Videos\TeslaCam\2022-03-19_17-56-03\2022-03-19_17-44-54-left_repeater.mp4")));
-            _mediaPlayer3.Play(new Media(_libVLC, new Uri(@"C:\Users\sh0rt\Videos\TeslaCam\2022-03-19_17-56-03\2022-03-19_17-44-54-right_repeater.mp4")));
-            _mediaPlayer4.Play(new Media(_libVLC, new Uri(@"C:\Users\sh0rt\Videos\TeslaCam\2022-03-19_17-56-03\2022-03-19_17-44-54-back.mp4")));
+            player = new(_libVLC, playerFront, playerLeft, playerRight, playerBack);
+            player.Play(@"C:\Users\sh0rt\Videos\TeslaCam\2022-03-19_18-37-36");
         }
     }
 }

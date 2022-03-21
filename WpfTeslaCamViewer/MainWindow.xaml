@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:wpf="clr-namespace:LibVLCSharp.WPF;assembly=LibVLCSharp.WPF"
         mc:Ignorable="d"
-        Title="WpfTeslaCamViewer" Height="960" Width="1280" Loaded="Window_Loaded">
-    <Grid>
+        Title="WpfTeslaCamViewer" Height="720" Width="1280" Loaded="Window_Loaded">
+    <Grid Background="Gray">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*" />
             <ColumnDefinition Width="0.01*" />
