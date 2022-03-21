@@ -51,7 +51,6 @@ namespace WpfTeslaCamViewer
             playerLeft?.SetRate(playbackSpeed);
             playerRight?.SetRate(playbackSpeed);
             playerBack?.SetRate(playbackSpeed);
-
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -70,7 +69,7 @@ namespace WpfTeslaCamViewer
             videoViewRear.MediaPlayer = playerBack;
 
             player = new(_libVLC, playerFront, playerLeft, playerRight, playerBack);
-            player.SetDebugInfoAction(info => lbl_DebugInfo.Content = info);
+            player.SetDebugInfoAction(async info => await Application.Current.Dispatcher.BeginInvoke(() => lbl_DebugInfo.Content = info));
 
             UpdateWindowTitle("No directory opened");
         }
