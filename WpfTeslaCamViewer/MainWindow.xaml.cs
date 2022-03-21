@@ -23,12 +23,35 @@ namespace WpfTeslaCamViewer
     {
         LibVLC? _libVLC;
         LibVLCSharp.Shared.MediaPlayer? playerFront, playerLeft, playerRight, playerBack;
-        TeslaCamPlayer player;
+        TeslaCamPlayer? player;
+        float playbackSpeed;
 
         public MainWindow()
         {
             InitializeComponent();
-            player = null;
+            playbackSpeed = 1f;
+        }
+
+        private void btn_SlowDown_Click(object sender, RoutedEventArgs e)
+        {
+            playbackSpeed -= 0.1f;
+            SetPlaybackRate();
+        }
+
+        private void btn_SpeedUp_Click(object sender, RoutedEventArgs e)
+        {
+            playbackSpeed += 0.1f;
+            SetPlaybackRate();
+        }
+
+        private void SetPlaybackRate()
+        {
+            lbl_playbackspeed.Content = playbackSpeed.ToString();
+            playerFront?.SetRate(playbackSpeed);
+            playerLeft?.SetRate(playbackSpeed);
+            playerRight?.SetRate(playbackSpeed);
+            playerBack?.SetRate(playbackSpeed);
+
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -47,7 +70,29 @@ namespace WpfTeslaCamViewer
             videoViewRear.MediaPlayer = playerBack;
 
             player = new(_libVLC, playerFront, playerLeft, playerRight, playerBack);
-            player.Play(@"C:\Users\sh0rt\Videos\TeslaCam\2022-03-19_18-37-36");
+            player.SetDebugInfoAction(info => lbl_DebugInfo.Content = info);
+
+            UpdateWindowTitle("No directory opened");
+        }
+
+        private void btn_OpenFolder_Click(object sender, RoutedEventArgs e)
+        {
+            using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
+            {
+                dialog.Description = "Select a folder to read TeslaCam videos from.";
+                dialog.UseDescriptionForTitle = true;
+                dialog.ShowNewFolderButton = false;
+                System.Windows.Forms.DialogResult result = dialog.ShowDialog();
+                if (result == System.Windows.Forms.DialogResult.OK && player != null)
+                {
+                    UpdateWindowTitle(player.Play(dialog.SelectedPath) ? dialog.SelectedPath : "Invalid directory");
+                }
+            }
+        }
+
+        private void UpdateWindowTitle(string Path)
+        {
+            mainWindow.Title = "WpfTeslaCamViewer - " + Path;
         }
     }
 }
