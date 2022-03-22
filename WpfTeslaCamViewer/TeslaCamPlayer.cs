@@ -78,31 +78,16 @@ namespace WpfTeslaCamViewer
 
         public bool Play(string Path)
         {
-            this.indexFront = -1;
-            this.indexLeft = -1;
-            this.indexRight = -1;
-            this.indexBack = -1;
-
-            if (!String.IsNullOrWhiteSpace(Path) && Directory.Exists(Path))
+            if (!string.IsNullOrWhiteSpace(Path) && File.Exists($"{Path}-front.mp4"))
             {
-                DirectoryInfo dir = new(Path);
-                var allVideos = dir.GetFiles().Where(file => file.Extension == ".mp4");
-                this.filesFront = allVideos.Where(file => file.Name.Contains("front")).OrderBy(file => file.Name).ToList();
-                this.filesLeft = allVideos.Where(file => file.Name.Contains("left")).OrderBy(file => file.Name).ToList();
-                this.filesRight = allVideos.Where(file => file.Name.Contains("right")).OrderBy(file => file.Name).ToList();
-                this.filesBack = allVideos.Where(file => file.Name.Contains("back")).OrderBy(file => file.Name).ToList();
-
-                if (filesFront.Count == 0 && filesLeft.Count == 0 && filesRight.Count == 0 && filesBack.Count == 0)
-                    return false;
-                else
-                {
-                    SkipForward();
-
-                    return true;
-                }
+                ThreadPool.QueueUserWorkItem(_ => playerFront.Play(new Media(this.vlc, new Uri($"{Path}-front.mp4"))));
+                ThreadPool.QueueUserWorkItem(_ => playerBack.Play(new Media(this.vlc, new Uri($"{Path}-back.mp4"))));
+                ThreadPool.QueueUserWorkItem(_ => playerLeft.Play(new Media(this.vlc, new Uri($"{Path}-left_repeater.mp4"))));
+                ThreadPool.QueueUserWorkItem(_ => playerRight.Play(new Media(this.vlc, new Uri($"{Path}-right_repeater.mp4"))));
+                return true;
+                
             }
-            else
-                return false;
+            return false;
         }
 
         public string GetDebugInfo()
