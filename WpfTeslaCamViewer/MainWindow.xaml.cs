@@ -181,16 +181,32 @@ namespace WpfTeslaCamViewer
                 var directory = FolderNames[cmbFolderList.SelectedIndex];
 
                 FileNames.Clear();
-                foreach (var file in Directory.GetFiles(directory, "*.mp4"))
+                var files = Directory.GetFiles(directory, "*.mp4");
+                if (files.Length == 0)
                 {
-                    FileNames.Add(file.Replace("-back", "").Replace("-front", "").Replace("-left_repeater", "")
-                        .Replace("-right_repeater", "").Replace(".mp4", ""));
+                    lbFileNames.ItemsSource = null;
+                    MessageBox.Show("No video files found in selected folder!\nMake sure you selected the correct folder.",
+                        "Nothing to show", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    cmbFolderList.Focus();
                 }
+                else
+                {
+                    foreach (var file in files)
+                    {
+                        FileNames.Add(file.Replace("-back", "").Replace("-front", "").Replace("-left_repeater", "")
+                            .Replace("-right_repeater", "").Replace(".mp4", ""));
+                    }
 
-                lbFileNames.ItemsSource =
-                    new ObservableCollection<string>(FileNames.Select(x => x.Replace($"{directory}\\", "")));
-                lbFileNames.SelectedIndex = 0;
-                lbFileNames.Focus();
+                    lbFileNames.ItemsSource =
+                        new ObservableCollection<string>(FileNames.Select(x => x.Replace($"{directory}\\", "")));
+                    lbFileNames.SelectedIndex = 0;
+                    lbFileNames.Focus();
+
+                    if (File.Exists(Path.Combine(directory, "event.json")))
+                    {
+                        //TODO: read event.json, show if Sentry or Dashcam, if Sentry which camera, maybe a link to Google maps?
+                    }
+                }
             }
         }
 
