@@ -34,17 +34,17 @@
             </StackPanel>
             <Slider x:Name="slider_progress" PreviewMouseDown="slider_progress_PreviewMouseDown" PreviewMouseUp="slider_progress_PreviewMouseUp" Value="{Binding Position}" Maximum="1" 
                     SmallChange="0.01" TickFrequency="0.1" IsSnapToTickEnabled="False" IsMoveToPointEnabled="True" />
-            <StackPanel Orientation="Horizontal">
-                <Button x:Name="btn_GoBack" Content="&lt;" Click="btn_GoBack_Click" Margin="8" MinWidth="28" MinHeight="28" />
-                <Button x:Name="btn_GoForward" Content="&gt;" Click="btn_GoForward_Click" Margin="8" MinWidth="28" MinHeight="28" HorizontalAlignment="Right" />
-            </StackPanel>
         </StackPanel>
         <StackPanel Grid.Column="4" Grid.Row="1" Background="#777" Margin="16">
             <TextBlock Margin="8,8,8,0">Folder List</TextBlock>
             <ComboBox Margin="8" x:Name="cmbFolderList" SelectionChanged="CmbFolderList_OnSelectionChanged">
                 
             </ComboBox>
-            <TextBlock Margin="8">Clips</TextBlock>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Margin="8">Clips</TextBlock>
+                <Button x:Name="btn_GoBack" Content="&lt;" Click="btn_GoBack_Click" Margin="8" MinWidth="28" MinHeight="28" />
+                <Button x:Name="btn_GoForward" Content="&gt;" Click="btn_GoForward_Click" Margin="8" MinWidth="28" MinHeight="28" HorizontalAlignment="Right" />
+            </StackPanel>
             <ListBox  d:ItemsSource="{d:SampleData ItemCount=5}" Margin="8" Background="#777" x:Name="lbFileNames" SelectionChanged="LbFileNames_OnSelectionChanged" SelectionMode="Single"/>
         </StackPanel>
     </Grid>
