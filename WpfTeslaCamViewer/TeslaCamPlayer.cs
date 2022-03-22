@@ -45,6 +45,14 @@ namespace WpfTeslaCamViewer
             return false;
         }
 
+        public void Stop()
+        {
+            ThreadPool.QueueUserWorkItem(_ => playerFront.Stop());
+            ThreadPool.QueueUserWorkItem(_ => playerBack.Stop());
+            ThreadPool.QueueUserWorkItem(_ => playerLeft.Stop());
+            ThreadPool.QueueUserWorkItem(_ => playerRight.Stop());
+        }
+
         public string GetDebugInfo()
         {
             StringBuilder sb = new();

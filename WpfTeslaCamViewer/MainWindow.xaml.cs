@@ -115,29 +115,35 @@ namespace WpfTeslaCamViewer
             dialog.UseDescriptionForTitle = true;
             dialog.ShowNewFolderButton = false;
             var result = dialog.ShowDialog();
-            if (result == System.Windows.Forms.DialogResult.OK && player != null)
+            if (result == System.Windows.Forms.DialogResult.OK)
             {
-                var allEntries =
-                    Directory.EnumerateFileSystemEntries(dialog.SelectedPath, "*", SearchOption.TopDirectoryOnly);
+                player?.Stop();
 
-                var entries = allEntries.ToList();
-                
+                //Don't include files here
+                var entries = Directory.GetDirectories(dialog.SelectedPath).ToList();
+
                 FolderNames.Clear();
                 FileNames.Clear();
-                foreach (var dir in entries.Where(Directory.Exists))
+
+                if (entries.Count == 0)
                 {
-                    FolderNames.Add(dir);
+                    cmbFolderList.ItemsSource = null;
+                    lbFileNames.ItemsSource = null;
+                    MessageBox.Show("No subdirectories found!\nPlease select the folder containing the clip-subdirectories, for example the \"SavedClips\" directory.",
+                        "Invalid folder selected", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
-
-                foreach (var file in entries.Where(File.Exists))
+                else
                 {
-                    FileNames.Add(file);
+                    foreach (var dir in entries.Where(Directory.Exists))
+                    {
+                        FolderNames.Add(dir);
+                    }
+
+                    cmbFolderList.ItemsSource = FolderNames.Select(x => x.Replace($"{dialog.SelectedPath}\\", ""));
+                    lbFileNames.ItemsSource = FileNames.Select(x => x.Replace($"{dialog.SelectedPath}\\", ""));
+
+                    cmbFolderList.SelectedIndex = 0;
                 }
-
-                cmbFolderList.ItemsSource = FolderNames.Select(x => x.Replace($"{dialog.SelectedPath}\\", ""));
-                lbFileNames.ItemsSource = FileNames.Select(x => x.Replace($"{dialog.SelectedPath}\\", ""));
-
-                cmbFolderList.SelectedIndex = 0;
             }
         }
 
@@ -165,19 +171,27 @@ namespace WpfTeslaCamViewer
 
         private void CmbFolderList_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var directory = FolderNames[cmbFolderList.SelectedIndex];
-
-            FileNames.Clear();
-            foreach (var file in Directory.GetFiles(directory, "*.mp4"))
+            if (cmbFolderList.Items.Count == 0 || cmbFolderList.SelectedIndex == -1)
             {
-                FileNames.Add(file.Replace("-back", "").Replace("-front", "").Replace("-left_repeater", "")
-                    .Replace("-right_repeater", "").Replace(".mp4", ""));
+                //Selected an invalid folder as TeslaCam folder maybe
+                player?.Stop();
             }
+            else
+            {
+                var directory = FolderNames[cmbFolderList.SelectedIndex];
 
-            lbFileNames.ItemsSource =
-                new ObservableCollection<string>(FileNames.Select(x => x.Replace($"{directory}\\", "")));
-            lbFileNames.SelectedIndex = 0;
-            lbFileNames.Focus();
+                FileNames.Clear();
+                foreach (var file in Directory.GetFiles(directory, "*.mp4"))
+                {
+                    FileNames.Add(file.Replace("-back", "").Replace("-front", "").Replace("-left_repeater", "")
+                        .Replace("-right_repeater", "").Replace(".mp4", ""));
+                }
+
+                lbFileNames.ItemsSource =
+                    new ObservableCollection<string>(FileNames.Select(x => x.Replace($"{directory}\\", "")));
+                lbFileNames.SelectedIndex = 0;
+                lbFileNames.Focus();
+            }
         }
 
         private void GoToLastClip()
