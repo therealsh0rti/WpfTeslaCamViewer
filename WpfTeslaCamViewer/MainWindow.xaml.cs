@@ -47,8 +47,11 @@ namespace WpfTeslaCamViewer
 
         private void btn_SlowDown_Click(object sender, RoutedEventArgs e)
         {
-            playbackSpeed -= 0.1f;
-            SetPlaybackRate();
+            if (playbackSpeed > 0.1f)
+            {
+                playbackSpeed -= 0.1f;
+                SetPlaybackRate();
+            }
         }
 
         private void btn_SpeedUp_Click(object sender, RoutedEventArgs e)
@@ -59,7 +62,7 @@ namespace WpfTeslaCamViewer
 
         private void SetPlaybackRate()
         {
-            lbl_playbackspeed.Content = Math.Round(playbackSpeed, 1).ToString();
+            lbl_playbackspeed.Content = $"{Math.Round(playbackSpeed, 1)}x";
             playerFront?.SetRate(playbackSpeed);
             playerLeft?.SetRate(playbackSpeed);
             playerRight?.SetRate(playbackSpeed);
@@ -79,24 +82,12 @@ namespace WpfTeslaCamViewer
 
         private void btn_GoBack_Click(object sender, RoutedEventArgs e)
         {
-            if (lbFileNames.SelectedIndex > 0)
-                lbFileNames.SelectedIndex--;
-            else if (cmbFolderList.SelectedIndex > 0)
-            {
-                cmbFolderList.SelectedIndex--;
-                lbFileNames.SelectedIndex = lbFileNames.Items.Count - 1;
-            }
+            GoToLastClip();
         }
 
         private void btn_GoForward_Click(object sender, RoutedEventArgs e)
         {
-            if (lbFileNames.SelectedIndex < lbFileNames.Items.Count - 1)
-                lbFileNames.SelectedIndex++;
-            else if (cmbFolderList.SelectedIndex < cmbFolderList.Items.Count - 1)
-            {
-                cmbFolderList.SelectedIndex++;
-                lbFileNames.SelectedIndex = 0;
-            }
+            GoToNextClip();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -112,7 +103,7 @@ namespace WpfTeslaCamViewer
             videoViewRightRepeater.MediaPlayer = playerRight;
             videoViewRear.MediaPlayer = playerBack;
 
-            player = new TeslaCamPlayer(libVlc, playerFront, playerLeft, playerRight, playerBack);
+            player = new TeslaCamPlayer(libVlc, playerFront, playerLeft, playerRight, playerBack, async () => await Application.Current.Dispatcher.BeginInvoke(GoToNextClip));
 
             UpdateWindowTitle("No directory opened");
         }
@@ -120,7 +111,7 @@ namespace WpfTeslaCamViewer
         private void btn_OpenFolder_Click(object sender, RoutedEventArgs e)
         {
             using var dialog = new System.Windows.Forms.FolderBrowserDialog();
-            dialog.Description = "Select a folder to read TeslaCam videos from.";
+            dialog.Description = "Select the folder containing the clip folders (e.g. SavedClips)";
             dialog.UseDescriptionForTitle = true;
             dialog.ShowNewFolderButton = false;
             var result = dialog.ShowDialog();
@@ -166,7 +157,7 @@ namespace WpfTeslaCamViewer
 
             var selectedFile = FileNames.FirstOrDefault(x => x.Contains(lbFileNames.SelectedValue?.ToString() ?? string.Empty));
 
-            if (player != null)
+            if (player != null && !String.IsNullOrWhiteSpace(selectedFile))
             {
                 UpdateWindowTitle(player.Play(selectedFile) ? selectedFile : "Invalid directory");
             }
@@ -187,6 +178,28 @@ namespace WpfTeslaCamViewer
                 new ObservableCollection<string>(FileNames.Select(x => x.Replace($"{directory}\\", "")));
             lbFileNames.SelectedIndex = 0;
             lbFileNames.Focus();
+        }
+
+        private void GoToLastClip()
+        {
+            if (lbFileNames.SelectedIndex > 0)
+                lbFileNames.SelectedIndex--;
+            else if (cmbFolderList.SelectedIndex > 0)
+            {
+                cmbFolderList.SelectedIndex--;
+                lbFileNames.SelectedIndex = lbFileNames.Items.Count - 1;
+            }
+        }
+
+        private void GoToNextClip()
+        {
+            if (lbFileNames.SelectedIndex < lbFileNames.Items.Count - 1)
+                lbFileNames.SelectedIndex++;
+            else if (cmbFolderList.SelectedIndex < cmbFolderList.Items.Count - 1)
+            {
+                cmbFolderList.SelectedIndex++;
+                lbFileNames.SelectedIndex = 0;
+            }
         }
     }
 }

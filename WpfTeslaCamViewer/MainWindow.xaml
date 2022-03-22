@@ -29,7 +29,7 @@
             <Label Content="Playback speed:"/>
             <StackPanel Orientation="Horizontal" Margin="8">
                 <Button x:Name="btn_SlowDown" Content="-" Click="btn_SlowDown_Click" MinWidth="30" />
-                <Label x:Name="lbl_playbackspeed" Content="1" HorizontalAlignment="Center" Margin="8,0" />
+                <Label x:Name="lbl_playbackspeed" Content="1x" HorizontalAlignment="Center" Margin="8,0" />
                 <Button x:Name="btn_SpeedUp" Content="+" Click="btn_SpeedUp_Click" MinWidth="30"/>
             </StackPanel>
             <Slider x:Name="slider_progress" PreviewMouseDown="slider_progress_PreviewMouseDown" PreviewMouseUp="slider_progress_PreviewMouseUp" Value="{Binding Position}" Maximum="1" 

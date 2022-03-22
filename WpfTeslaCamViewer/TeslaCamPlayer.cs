@@ -13,7 +13,8 @@ namespace WpfTeslaCamViewer
         LibVLC vlc;
         MediaPlayer playerFront, playerLeft, playerRight, playerBack;
 
-        public TeslaCamPlayer(LibVLC vlc, MediaPlayer playerFront, MediaPlayer playerLeft, MediaPlayer playerRight, MediaPlayer playerBack)
+        public TeslaCamPlayer(LibVLC vlc, MediaPlayer playerFront, MediaPlayer playerLeft, MediaPlayer playerRight, MediaPlayer playerBack, 
+            Action playNextAction)
         {
             this.vlc = vlc;
 
@@ -27,17 +28,7 @@ namespace WpfTeslaCamViewer
             this.playerRight.Mute = true;
             this.playerBack.Mute = true;
 
-            this.playerFront.EndReached += PlayerFront_PlayNext;
-        }
-
-        private void PlayerFront_PlayNext(object? sender, EventArgs? e)
-        {
-            //TODO: Tell MainWindow to press the SkipForward button
-            //indexFront += 1;
-            //if (filesFront != null && indexFront < filesFront.Count && indexFront >= 0)
-            //    ThreadPool.QueueUserWorkItem(_ => playerFront.Play(new Media(this.vlc, new Uri(filesFront[indexFront].FullName))));
-            //else
-            //    ThreadPool.QueueUserWorkItem(_ => playerFront.Stop());
+            this.playerFront.EndReached += (_, _) => playNextAction();
         }
 
         public bool Play(string Path)
