@@ -1,7 +1,12 @@
 ﻿using LibVLCSharp.Shared;
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
 using System.Timers;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace WpfTeslaCamViewer
 {
@@ -10,38 +15,43 @@ namespace WpfTeslaCamViewer
     /// </summary>
     public partial class MainWindow : Window
     {
-        LibVLC? _libVLC;
-        LibVLCSharp.Shared.MediaPlayer? playerFront, playerLeft, playerRight, playerBack;
-        TeslaCamPlayer? player;
-        float playbackSpeed;
-        Timer PlayerInfoTimer;
+        private readonly LibVLC libVlc;
+        private MediaPlayer? playerFront, playerLeft, playerRight, playerBack;
+        private TeslaCamPlayer? player;
+        private float playbackSpeed;
+        private readonly Timer playerInfoTimer;
 
-        public MainWindow()
+        public ObservableCollection<string> FolderNames { get; set; } = new();
+        public HashSet<string> FileNames { get; set; } = new();
+
+        public MainWindow(LibVLC libVlc)
         {
+            this.libVlc = libVlc;
             InitializeComponent();
             playbackSpeed = 1f;
-            PlayerInfoTimer = new(500);
-            PlayerInfoTimer.Elapsed += async (object? sender, ElapsedEventArgs e) =>
+            playerInfoTimer = new Timer(500);
+            playerInfoTimer.Elapsed += async (_, _) =>
             {
-                if (player != null)
-                {
-                    string info = player.GetDebugInfo();
+                if (player == null) return;
 
-                    float Position = player.GetCurrentVideoPosition();
+                var info = player.GetDebugInfo();
+                var position = player.GetCurrentVideoPosition();
 
-                    await Application.Current.Dispatcher.BeginInvoke(() => { 
-                        lbl_DebugInfo.Content = info;
-                        slider_progress.Value = Position;
-                    });
-                }
+                await Application.Current.Dispatcher.BeginInvoke(() => { 
+                    lbl_DebugInfo.Content = info;
+                    slider_progress.Value = position;
+                });
             };
-            PlayerInfoTimer.Start();
+            playerInfoTimer.Start();
         }
 
         private void btn_SlowDown_Click(object sender, RoutedEventArgs e)
         {
-            playbackSpeed -= 0.1f;
-            SetPlaybackRate();
+            if (playbackSpeed > 0.1f)
+            {
+                playbackSpeed -= 0.1f;
+                SetPlaybackRate();
+            }
         }
 
         private void btn_SpeedUp_Click(object sender, RoutedEventArgs e)
@@ -52,7 +62,7 @@ namespace WpfTeslaCamViewer
 
         private void SetPlaybackRate()
         {
-            lbl_playbackspeed.Content = Math.Round(playbackSpeed, 1).ToString();
+            lbl_playbackspeed.Content = $"{Math.Round(playbackSpeed, 1)}x";
             playerFront?.SetRate(playbackSpeed);
             playerLeft?.SetRate(playbackSpeed);
             playerRight?.SetRate(playbackSpeed);
@@ -61,56 +71,78 @@ namespace WpfTeslaCamViewer
 
         private void slider_progress_PreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            PlayerInfoTimer.Stop();
+            playerInfoTimer.Stop();
         }
 
         private void slider_progress_PreviewMouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             player?.SetPosition((float)slider_progress.Value);
-            PlayerInfoTimer.Start();
+            playerInfoTimer.Start();
         }
 
         private void btn_GoBack_Click(object sender, RoutedEventArgs e)
         {
-            player?.SkipBack();
+            GoToLastClip();
         }
 
         private void btn_GoForward_Click(object sender, RoutedEventArgs e)
         {
-            player?.SkipForward();
+            GoToNextClip();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            Core.Initialize();
 
-            _libVLC = new LibVLC();
-            playerFront = new LibVLCSharp.Shared.MediaPlayer(_libVLC);
-            playerLeft = new LibVLCSharp.Shared.MediaPlayer(_libVLC);
-            playerRight = new LibVLCSharp.Shared.MediaPlayer(_libVLC);
-            playerBack = new LibVLCSharp.Shared.MediaPlayer(_libVLC);
+            playerFront = new MediaPlayer(libVlc);
+            playerLeft = new MediaPlayer(libVlc);
+            playerRight = new MediaPlayer(libVlc);
+            playerBack = new MediaPlayer(libVlc);
 
             videoViewFront.MediaPlayer = playerFront;
             videoViewLeftRepeater.MediaPlayer = playerLeft;
             videoViewRightRepeater.MediaPlayer = playerRight;
             videoViewRear.MediaPlayer = playerBack;
 
-            player = new(_libVLC, playerFront, playerLeft, playerRight, playerBack);
+            player = new TeslaCamPlayer(libVlc, playerFront, playerLeft, playerRight, playerBack, async () => await Application.Current.Dispatcher.BeginInvoke(GoToNextClip));
 
             UpdateWindowTitle("No directory opened");
         }
 
         private void btn_OpenFolder_Click(object sender, RoutedEventArgs e)
         {
-            using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
+            using var dialog = new System.Windows.Forms.FolderBrowserDialog();
+            dialog.Description = "Select the folder containing the clip folders (e.g. SavedClips)";
+            dialog.UseDescriptionForTitle = true;
+            dialog.ShowNewFolderButton = false;
+            var result = dialog.ShowDialog();
+            if (result == System.Windows.Forms.DialogResult.OK)
             {
-                dialog.Description = "Select a folder to read TeslaCam videos from.";
-                dialog.UseDescriptionForTitle = true;
-                dialog.ShowNewFolderButton = false;
-                System.Windows.Forms.DialogResult result = dialog.ShowDialog();
-                if (result == System.Windows.Forms.DialogResult.OK && player != null)
+                player?.Stop();
+
+                //Don't include files here
+                var entries = Directory.GetDirectories(dialog.SelectedPath).ToList();
+
+                FolderNames.Clear();
+                FileNames.Clear();
+
+                if (entries.Count == 0)
                 {
-                    UpdateWindowTitle(player.Play(dialog.SelectedPath) ? dialog.SelectedPath : "Invalid directory");
+                    cmbFolderList.ItemsSource = null;
+                    lbFileNames.ItemsSource = null;
+                    MessageBox.Show("No subdirectories found!\nPlease select the folder containing the clip-subdirectories, for example the \"SavedClips\" directory.",
+                        "Invalid folder selected", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                else
+                {
+                    foreach (var dir in entries.Where(Directory.Exists))
+                    {
+                        FolderNames.Add(dir);
+                    }
+
+                    cmbFolderList.ItemsSource = FolderNames.Select(x => x.Replace($"{dialog.SelectedPath}\\", ""));
+                    lbFileNames.ItemsSource = FileNames.Select(x => x.Replace($"{dialog.SelectedPath}\\", ""));
+
+                    cmbFolderList.SelectedIndex = 0;
                 }
             }
         }
@@ -118,6 +150,70 @@ namespace WpfTeslaCamViewer
         private void UpdateWindowTitle(string Path)
         {
             mainWindow.Title = "WpfTeslaCamViewer - " + Path;
+        }
+
+        private void LbFileNames_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            PlaySelectedFile();
+        }
+
+        private void PlaySelectedFile()
+        {
+            if (FileNames.Count <= 0) return;
+
+            var selectedFile = FileNames.FirstOrDefault(x => x.Contains(lbFileNames.SelectedValue?.ToString() ?? string.Empty));
+
+            if (player != null && !String.IsNullOrWhiteSpace(selectedFile))
+            {
+                UpdateWindowTitle(player.Play(selectedFile) ? selectedFile : "Invalid directory");
+            }
+        }
+
+        private void CmbFolderList_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (cmbFolderList.Items.Count == 0 || cmbFolderList.SelectedIndex == -1)
+            {
+                //Selected an invalid folder as TeslaCam folder maybe
+                player?.Stop();
+            }
+            else
+            {
+                var directory = FolderNames[cmbFolderList.SelectedIndex];
+
+                FileNames.Clear();
+                foreach (var file in Directory.GetFiles(directory, "*.mp4"))
+                {
+                    FileNames.Add(file.Replace("-back", "").Replace("-front", "").Replace("-left_repeater", "")
+                        .Replace("-right_repeater", "").Replace(".mp4", ""));
+                }
+
+                lbFileNames.ItemsSource =
+                    new ObservableCollection<string>(FileNames.Select(x => x.Replace($"{directory}\\", "")));
+                lbFileNames.SelectedIndex = 0;
+                lbFileNames.Focus();
+            }
+        }
+
+        private void GoToLastClip()
+        {
+            if (lbFileNames.SelectedIndex > 0)
+                lbFileNames.SelectedIndex--;
+            else if (cmbFolderList.SelectedIndex > 0)
+            {
+                cmbFolderList.SelectedIndex--;
+                lbFileNames.SelectedIndex = lbFileNames.Items.Count - 1;
+            }
+        }
+
+        private void GoToNextClip()
+        {
+            if (lbFileNames.SelectedIndex < lbFileNames.Items.Count - 1)
+                lbFileNames.SelectedIndex++;
+            else if (cmbFolderList.SelectedIndex < cmbFolderList.Items.Count - 1)
+            {
+                cmbFolderList.SelectedIndex++;
+                lbFileNames.SelectedIndex = 0;
+            }
         }
     }
 }
