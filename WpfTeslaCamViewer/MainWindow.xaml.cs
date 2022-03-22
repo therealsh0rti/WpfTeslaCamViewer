@@ -79,12 +79,24 @@ namespace WpfTeslaCamViewer
 
         private void btn_GoBack_Click(object sender, RoutedEventArgs e)
         {
-            
+            if (lbFileNames.SelectedIndex > 0)
+                lbFileNames.SelectedIndex--;
+            else if (cmbFolderList.SelectedIndex > 0)
+            {
+                cmbFolderList.SelectedIndex--;
+                lbFileNames.SelectedIndex = lbFileNames.Items.Count - 1;
+            }
         }
 
         private void btn_GoForward_Click(object sender, RoutedEventArgs e)
         {
-            player?.SkipForward();
+            if (lbFileNames.SelectedIndex < lbFileNames.Items.Count - 1)
+                lbFileNames.SelectedIndex++;
+            else if (cmbFolderList.SelectedIndex < cmbFolderList.Items.Count - 1)
+            {
+                cmbFolderList.SelectedIndex++;
+                lbFileNames.SelectedIndex = 0;
+            }
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
