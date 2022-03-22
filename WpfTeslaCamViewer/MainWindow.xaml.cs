@@ -202,9 +202,10 @@ namespace WpfTeslaCamViewer
                     lbFileNames.SelectedIndex = 0;
                     lbFileNames.Focus();
 
-                    if (File.Exists(Path.Combine(directory, "event.json")))
+                    string jsonPath = Path.Combine(directory, "event.json");
+                    if (File.Exists(jsonPath))
                     {
-                        //TODO: read event.json, show if Sentry or Dashcam, if Sentry which camera, maybe a link to Google maps?
+                        ReadEventJson(jsonPath);
                     }
                 }
             }
@@ -230,6 +231,11 @@ namespace WpfTeslaCamViewer
                 cmbFolderList.SelectedIndex++;
                 lbFileNames.SelectedIndex = 0;
             }
+        }
+
+        private void ReadEventJson(string JsonPath)
+        {
+            lbl_eventinfo.Content = TeslaCamEventInfo.FromJSONString(File.ReadAllText(JsonPath))?.ToString() ?? "";
         }
     }
 }
