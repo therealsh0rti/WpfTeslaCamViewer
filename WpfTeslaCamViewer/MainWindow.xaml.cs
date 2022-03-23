@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
@@ -235,7 +237,20 @@ namespace WpfTeslaCamViewer
 
         private void ReadEventJson(string JsonPath)
         {
-            lbl_eventinfo.Content = TeslaCamEventInfo.FromJSONString(File.ReadAllText(JsonPath))?.ToString() ?? "";
+            string json = File.ReadAllText(JsonPath);
+            string content = "";
+            if (!string.IsNullOrWhiteSpace(json))
+            {
+                TeslaCamEventInfo? info = JsonSerializer.Deserialize<TeslaCamEventInfo>(json, new JsonSerializerOptions
+                {
+                    Converters = { new JsonStringEnumConverter() },
+                    PropertyNameCaseInsensitive = true,
+                    NumberHandling = JsonNumberHandling.AllowReadingFromString
+                });
+                if (info != null)
+                    content = info.ToString();
+            }
+            lbl_eventinfo.Content = content;
         }
     }
 }

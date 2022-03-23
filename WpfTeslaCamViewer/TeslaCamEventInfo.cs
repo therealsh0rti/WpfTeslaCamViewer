@@ -39,6 +39,36 @@ namespace WpfTeslaCamViewer
         public TeslaCamReason Reason { get; set; }
         public TeslaCamCamera Camera { get; set; }
 
+        private static string ReasonToPrettyString(TeslaCamReason reason)
+        {
+            return reason switch
+            {
+                TeslaCamReason.User_Interaction_Dashcam_Icon_Tapped => "Dashcam (Icon)",
+                TeslaCamReason.User_Interaction_Honk => "Honk",
+                TeslaCamReason.User_Interaction_Dashcam_Panel_Save => "Dashcam (Panel)",
+                TeslaCamReason.Sentry_Aware_Object_Detection => "Sentry Mode (Object Detection)",
+                TeslaCamReason.SentryAccelerometer => "Sentry Mode (Accelerometer)",
+                _ => "Unknown",
+            };
+        }
+
+        private static string CameraToPrettyString(TeslaCamCamera camera)
+        {
+            return camera switch
+            {
+                TeslaCamCamera.FrontMain => "Front",
+                TeslaCamCamera.FrontWide => "Front Wide (Not recorded)",
+                TeslaCamCamera.FrontNarrow => "Front Narrow (Not recorded)",
+                TeslaCamCamera.LeftRepeater => "Left Repeater",
+                TeslaCamCamera.RightRepeater => "Right Repeater",
+                TeslaCamCamera.LeftPillar => "Right Pillar (Not recorded)",
+                TeslaCamCamera.RightPillar => "Right Pillar (Not recorded)",
+                TeslaCamCamera.Rear => "Rear",
+                TeslaCamCamera.Cabin => "Cabin (Not recorded)",
+                _ => "Unknown",
+            };
+        }
+
         public override string ToString()
         {
             StringBuilder sb = new();
@@ -57,30 +87,13 @@ namespace WpfTeslaCamViewer
             sb.AppendLine();
 
             sb.Append("Reason: ");
-            sb.Append(this.Reason);
+            sb.Append(ReasonToPrettyString(this.Reason));
             sb.AppendLine();
 
             sb.Append("Camera: ");
-            sb.Append(this.Camera);
+            sb.Append(CameraToPrettyString(this.Camera));
 
             return sb.ToString();
-        }
-
-        public static TeslaCamEventInfo? FromJSONString(string json)
-        {
-            TeslaCamEventInfo? info = new();
-            try
-            {
-                info = JsonSerializer.Deserialize<TeslaCamEventInfo>(json, new JsonSerializerOptions
-                {
-                    Converters = { new JsonStringEnumConverter() },
-                    PropertyNameCaseInsensitive = true,
-                    NumberHandling = JsonNumberHandling.AllowReadingFromString
-                });
-            }
-            catch { /* Still return the object at this point? */ }
-
-            return info;
         }
     }
 }
