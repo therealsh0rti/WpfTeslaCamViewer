@@ -7,12 +7,12 @@ namespace WpfTeslaCamViewer.UnitTests
     public class TeslaCamReasonConverterTests
     {
         [TestMethod]
-        [DataRow("user_interaction_dashcam_panel_save")]
-        [DataRow("user_interaction_dashcam_icon_tapped")]
-        [DataRow("user_interaction_honk")]
-        [DataRow("sentry_aware_object_detection")]
-        [DataRow("sentry_aware_accel")]
-        [DataRow("sentry_aware_accel_12345_68-9834")] // idk what the numbers look like but yolo
+        [DataRow(Constants.UserInteractionDashcamPanelSave)]
+        [DataRow(Constants.UserInteractionDashcamIconTapped)]
+        [DataRow(Constants.UserInteractionHonk)]
+        [DataRow(Constants.SentryAwareObjectDetection)]
+        [DataRow(Constants.SentryAwareAccel)]
+        [DataRow($"{Constants.SentryAwareAccel}_12345_68-9834")] // idk what the numbers look like but yolo
         public void ReadJson_ValidTeslaCamReason_ReturnsEnumValue(string testReason)
         {
             // Arrange

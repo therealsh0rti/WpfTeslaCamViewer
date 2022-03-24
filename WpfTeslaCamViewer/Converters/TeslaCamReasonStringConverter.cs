@@ -11,15 +11,15 @@ public class TeslaCamReasonStringConverter : JsonConverter<TeslaCamReason>
         var reason = reader.GetString()!;
 
         // ol' trusty
-        if (reason.Contains("user_interaction_dashcam_panel_save"))
+        if (reason.Contains(Constants.UserInteractionDashcamPanelSave))
             return TeslaCamReason.UserInteractionDashcamPanelSave;
-        if (reason.Contains("user_interaction_dashcam_icon_tapped"))
+        if (reason.Contains(Constants.UserInteractionDashcamIconTapped))
             return TeslaCamReason.UserInteractionDashcamIconTapped;
-        if (reason.Contains("user_interaction_honk"))
+        if (reason.Contains(Constants.UserInteractionHonk))
             return TeslaCamReason.UserInteractionHonk;
-        if (reason.Contains("sentry_aware_object_detection"))
+        if (reason.Contains(Constants.SentryAwareObjectDetection))
             return TeslaCamReason.SentryAwareObjectDetection;
-        if (reason.Contains("sentry_aware_accel"))
+        if (reason.Contains(Constants.SentryAwareAccel))
             return TeslaCamReason.SentryAccelerometer;
 
 
@@ -31,19 +31,19 @@ public class TeslaCamReasonStringConverter : JsonConverter<TeslaCamReason>
         switch (value)
         {
             case TeslaCamReason.SentryAccelerometer:
-                writer.WriteStringValue("sentry_aware_accel");
+                writer.WriteStringValue(Constants.SentryAwareAccel);
                 break;
             case TeslaCamReason.UserInteractionDashcamIconTapped:
-                writer.WriteStringValue("user_interaction_dashcam_icon_tapped");
+                writer.WriteStringValue(Constants.UserInteractionDashcamIconTapped);
                 break;
             case TeslaCamReason.UserInteractionHonk:
-                writer.WriteStringValue("user_interaction_honk");
+                writer.WriteStringValue(Constants.UserInteractionHonk);
                 break;
             case TeslaCamReason.UserInteractionDashcamPanelSave:
-                writer.WriteStringValue("user_interaction_dashcam_panel_save");
+                writer.WriteStringValue(Constants.UserInteractionDashcamPanelSave);
                 break;
             case TeslaCamReason.SentryAwareObjectDetection:
-                writer.WriteStringValue("sentry_aware_object_detection");
+                writer.WriteStringValue(Constants.SentryAwareObjectDetection);
                 break;
             case TeslaCamReason.Unknown:
                 writer.WriteStringValue("unknown");
