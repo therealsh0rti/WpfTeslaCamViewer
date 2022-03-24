@@ -181,23 +181,42 @@ namespace WpfTeslaCamViewer
                 var directory = FolderNames[cmbFolderList.SelectedIndex];
 
                 FileNames.Clear();
-                foreach (var file in Directory.GetFiles(directory, "*.mp4"))
+                var files = Directory.GetFiles(directory, "*.mp4");
+                if (files.Length == 0)
                 {
-                    FileNames.Add(file.Replace("-back", "").Replace("-front", "").Replace("-left_repeater", "")
-                        .Replace("-right_repeater", "").Replace(".mp4", ""));
+                    lbFileNames.ItemsSource = null;
+                    MessageBox.Show("No video files found in selected folder!\nMake sure you selected the correct folder.",
+                        "Nothing to show", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    cmbFolderList.Focus();
                 }
+                else
+                {
+                    foreach (var file in files)
+                    {
+                        FileNames.Add(file.Replace("-back", "").Replace("-front", "").Replace("-left_repeater", "")
+                            .Replace("-right_repeater", "").Replace(".mp4", ""));
+                    }
 
-                lbFileNames.ItemsSource =
-                    new ObservableCollection<string>(FileNames.Select(x => x.Replace($"{directory}\\", "")));
-                lbFileNames.SelectedIndex = 0;
-                lbFileNames.Focus();
+                    lbFileNames.ItemsSource =
+                        new ObservableCollection<string>(FileNames.Select(x => x.Replace($"{directory}\\", "")));
+                    lbFileNames.SelectedIndex = 0;
+                    lbFileNames.Focus();
+
+                    var jsonPath = Path.Combine(directory, "event.json");
+                    if (File.Exists(jsonPath))
+                    {
+                        ReadEventJson(jsonPath);
+                    }
+                }
             }
         }
 
         private void GoToLastClip()
         {
             if (lbFileNames.SelectedIndex > 0)
+            {
                 lbFileNames.SelectedIndex--;
+            }
             else if (cmbFolderList.SelectedIndex > 0)
             {
                 cmbFolderList.SelectedIndex--;
@@ -208,12 +227,29 @@ namespace WpfTeslaCamViewer
         private void GoToNextClip()
         {
             if (lbFileNames.SelectedIndex < lbFileNames.Items.Count - 1)
+            {
                 lbFileNames.SelectedIndex++;
+            }
             else if (cmbFolderList.SelectedIndex < cmbFolderList.Items.Count - 1)
             {
                 cmbFolderList.SelectedIndex++;
                 lbFileNames.SelectedIndex = 0;
             }
+        }
+
+        private void ReadEventJson(string JsonPath)
+        {
+            var json = File.ReadAllText(JsonPath);
+            var content = "";
+            if (!string.IsNullOrWhiteSpace(json))
+            {
+                var info = json.Deserialize<TeslaCamEventInfo>();
+                if (info != null)
+                {
+                    content = info.ToString();
+                }
+            }
+            lbl_eventinfo.Content = content;
         }
     }
 }

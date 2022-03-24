@@ -34,6 +34,7 @@
             </StackPanel>
             <Slider x:Name="slider_progress" PreviewMouseDown="slider_progress_PreviewMouseDown" PreviewMouseUp="slider_progress_PreviewMouseUp" Value="{Binding Position}" Maximum="1" 
                     SmallChange="0.01" TickFrequency="0.1" IsSnapToTickEnabled="False" IsMoveToPointEnabled="True" />
+            <Label Margin="8" x:Name="lbl_eventinfo" />
         </StackPanel>
         <StackPanel Grid.Column="4" Grid.Row="1" Background="#777" Margin="16">
             <TextBlock Margin="8,8,8,0">Folder List</TextBlock>
