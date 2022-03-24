@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
@@ -204,7 +202,7 @@ namespace WpfTeslaCamViewer
                     lbFileNames.SelectedIndex = 0;
                     lbFileNames.Focus();
 
-                    string jsonPath = Path.Combine(directory, "event.json");
+                    var jsonPath = Path.Combine(directory, "event.json");
                     if (File.Exists(jsonPath))
                     {
                         ReadEventJson(jsonPath);
@@ -216,7 +214,9 @@ namespace WpfTeslaCamViewer
         private void GoToLastClip()
         {
             if (lbFileNames.SelectedIndex > 0)
+            {
                 lbFileNames.SelectedIndex--;
+            }
             else if (cmbFolderList.SelectedIndex > 0)
             {
                 cmbFolderList.SelectedIndex--;
@@ -227,7 +227,9 @@ namespace WpfTeslaCamViewer
         private void GoToNextClip()
         {
             if (lbFileNames.SelectedIndex < lbFileNames.Items.Count - 1)
+            {
                 lbFileNames.SelectedIndex++;
+            }
             else if (cmbFolderList.SelectedIndex < cmbFolderList.Items.Count - 1)
             {
                 cmbFolderList.SelectedIndex++;
@@ -237,18 +239,15 @@ namespace WpfTeslaCamViewer
 
         private void ReadEventJson(string JsonPath)
         {
-            string json = File.ReadAllText(JsonPath);
-            string content = "";
+            var json = File.ReadAllText(JsonPath);
+            var content = "";
             if (!string.IsNullOrWhiteSpace(json))
             {
-                TeslaCamEventInfo? info = JsonSerializer.Deserialize<TeslaCamEventInfo>(json, new JsonSerializerOptions
-                {
-                    Converters = { new JsonStringEnumConverter() },
-                    PropertyNameCaseInsensitive = true,
-                    NumberHandling = JsonNumberHandling.AllowReadingFromString
-                });
+                var info = json.Deserialize<TeslaCamEventInfo>();
                 if (info != null)
+                {
                     content = info.ToString();
+                }
             }
             lbl_eventinfo.Content = content;
         }

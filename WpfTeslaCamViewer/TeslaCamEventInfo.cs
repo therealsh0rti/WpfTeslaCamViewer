@@ -8,10 +8,10 @@ namespace WpfTeslaCamViewer
     public enum TeslaCamReason
     {
         Unknown = -1,
-        User_Interaction_Dashcam_Icon_Tapped,
-        User_Interaction_Honk,
-        User_Interaction_Dashcam_Panel_Save,
-        Sentry_Aware_Object_Detection,
+        UserInteractionDashcamIconTapped,
+        UserInteractionHonk,
+        UserInteractionDashcamPanelSave,
+        SentryAwareObjectDetection,
         SentryAccelerometer
     }
 
@@ -43,10 +43,10 @@ namespace WpfTeslaCamViewer
         {
             return reason switch
             {
-                TeslaCamReason.User_Interaction_Dashcam_Icon_Tapped => "Dashcam (Icon)",
-                TeslaCamReason.User_Interaction_Honk => "Honk",
-                TeslaCamReason.User_Interaction_Dashcam_Panel_Save => "Dashcam (Panel)",
-                TeslaCamReason.Sentry_Aware_Object_Detection => "Sentry Mode (Object Detection)",
+                TeslaCamReason.UserInteractionDashcamIconTapped => "Dashcam (Icon)",
+                TeslaCamReason.UserInteractionHonk => "Honk",
+                TeslaCamReason.UserInteractionDashcamPanelSave => "Dashcam (Panel)",
+                TeslaCamReason.SentryAwareObjectDetection => "Sentry Mode (Object Detection)",
                 TeslaCamReason.SentryAccelerometer => "Sentry Mode (Accelerometer)",
                 _ => "Unknown",
             };
