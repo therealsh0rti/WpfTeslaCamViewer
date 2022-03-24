@@ -202,7 +202,7 @@ namespace WpfTeslaCamViewer
                     lbFileNames.SelectedIndex = 0;
                     lbFileNames.Focus();
 
-                    string jsonPath = Path.Combine(directory, "event.json");
+                    var jsonPath = Path.Combine(directory, "event.json");
                     if (File.Exists(jsonPath))
                     {
                         ReadEventJson(jsonPath);
@@ -214,7 +214,9 @@ namespace WpfTeslaCamViewer
         private void GoToLastClip()
         {
             if (lbFileNames.SelectedIndex > 0)
+            {
                 lbFileNames.SelectedIndex--;
+            }
             else if (cmbFolderList.SelectedIndex > 0)
             {
                 cmbFolderList.SelectedIndex--;
@@ -225,7 +227,9 @@ namespace WpfTeslaCamViewer
         private void GoToNextClip()
         {
             if (lbFileNames.SelectedIndex < lbFileNames.Items.Count - 1)
+            {
                 lbFileNames.SelectedIndex++;
+            }
             else if (cmbFolderList.SelectedIndex < cmbFolderList.Items.Count - 1)
             {
                 cmbFolderList.SelectedIndex++;
@@ -235,7 +239,17 @@ namespace WpfTeslaCamViewer
 
         private void ReadEventJson(string JsonPath)
         {
-            lbl_eventinfo.Content = TeslaCamEventInfo.FromJSONString(File.ReadAllText(JsonPath))?.ToString() ?? "";
+            var json = File.ReadAllText(JsonPath);
+            var content = "";
+            if (!string.IsNullOrWhiteSpace(json))
+            {
+                var info = json.Deserialize<TeslaCamEventInfo>();
+                if (info != null)
+                {
+                    content = info.ToString();
+                }
+            }
+            lbl_eventinfo.Content = content;
         }
     }
 }

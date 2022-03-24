@@ -1,12 +1,21 @@
 ﻿using System;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace WpfTeslaCamViewer
 {
-    enum TeslaCamReason { Unknown = -1, UserDashcam, UserHonk, SentryObjectDetection, SentryAccelerometer }
+    public enum TeslaCamReason
+    {
+        Unknown = -1,
+        UserInteractionDashcamIconTapped,
+        UserInteractionHonk,
+        UserInteractionDashcamPanelSave,
+        SentryAwareObjectDetection,
+        SentryAccelerometer
+    }
 
-    enum TeslaCamCamera { 
+    public enum TeslaCamCamera { 
         //Source: teslamotorsclub.com - Feel free to correct
         FrontMain = 0, 
         FrontWide = 1, 
@@ -19,16 +28,46 @@ namespace WpfTeslaCamViewer
         Cabin = 8,
     }
 
-    class TeslaCamEventInfo
+    public class TeslaCamEventInfo
     {
-        DateTime Timestamp;
-        string? City;
-        double Latitude;
-        double Longitude;
-        TeslaCamReason Reason;
-        TeslaCamCamera Camera;
+        public DateTime Timestamp { get; set; }
+        public string? City { get; set; }
+        [JsonPropertyName("est_lat")]
+        public float Latitude { get; set; }
+        [JsonPropertyName("est_lon")]
+        public float Longitude { get; set; }
+        public TeslaCamReason Reason { get; set; }
+        public TeslaCamCamera Camera { get; set; }
 
-        private TeslaCamEventInfo() { }
+        private static string ReasonToPrettyString(TeslaCamReason reason)
+        {
+            return reason switch
+            {
+                TeslaCamReason.UserInteractionDashcamIconTapped => "Dashcam (Icon)",
+                TeslaCamReason.UserInteractionHonk => "Honk",
+                TeslaCamReason.UserInteractionDashcamPanelSave => "Dashcam (Panel)",
+                TeslaCamReason.SentryAwareObjectDetection => "Sentry Mode (Object Detection)",
+                TeslaCamReason.SentryAccelerometer => "Sentry Mode (Accelerometer)",
+                _ => "Unknown",
+            };
+        }
+
+        private static string CameraToPrettyString(TeslaCamCamera camera)
+        {
+            return camera switch
+            {
+                TeslaCamCamera.FrontMain => "Front",
+                TeslaCamCamera.FrontWide => "Front Wide (Not recorded)",
+                TeslaCamCamera.FrontNarrow => "Front Narrow (Not recorded)",
+                TeslaCamCamera.LeftRepeater => "Left Repeater",
+                TeslaCamCamera.RightRepeater => "Right Repeater",
+                TeslaCamCamera.LeftPillar => "Right Pillar (Not recorded)",
+                TeslaCamCamera.RightPillar => "Right Pillar (Not recorded)",
+                TeslaCamCamera.Rear => "Rear",
+                TeslaCamCamera.Cabin => "Cabin (Not recorded)",
+                _ => "Unknown",
+            };
+        }
 
         public override string ToString()
         {
@@ -48,48 +87,13 @@ namespace WpfTeslaCamViewer
             sb.AppendLine();
 
             sb.Append("Reason: ");
-            sb.Append(this.Reason);
+            sb.Append(ReasonToPrettyString(this.Reason));
             sb.AppendLine();
 
             sb.Append("Camera: ");
-            sb.Append(this.Camera);
+            sb.Append(CameraToPrettyString(this.Camera));
 
             return sb.ToString();
-        }
-
-        private static TeslaCamReason ConvertStringToReason(string reason)
-        {
-            //Ew! But how to do it better without checking for the exact reason? I'd like to use .Contains
-            if (reason.Contains("user_interaction_dashcam"))
-                return TeslaCamReason.UserDashcam;
-            else if (reason.Contains("user_interaction_honk"))
-                return TeslaCamReason.UserHonk;
-            else if (reason.Contains("sentry_aware_object_detection"))
-                return TeslaCamReason.SentryObjectDetection;
-            else if (reason.Contains("sentry_aware_accel"))
-                return TeslaCamReason.SentryAccelerometer;
-            else
-                return TeslaCamReason.Unknown;
-        }
-
-        public static TeslaCamEventInfo? FromJSONString(string json)
-        {
-            TeslaCamEventInfo info = new();
-            try
-            {
-                JsonDocument doc = JsonDocument.Parse(json);
-                JsonElement root = doc.RootElement;
-
-                info.Timestamp = Convert.ToDateTime(root.GetProperty("timestamp").ToString());
-                info.City = root.GetProperty("city").ToString();
-                info.Latitude = Convert.ToDouble(root.GetProperty("est_lat").ToString());
-                info.Longitude = Convert.ToDouble(root.GetProperty("est_lon").ToString());
-                info.Reason = ConvertStringToReason(root.GetProperty("reason").ToString());
-                info.Camera = (TeslaCamCamera)Convert.ToInt32(root.GetProperty("camera").ToString());
-            }
-            catch { /* Still return the object at this point? */ }
-
-            return info;
         }
     }
 }
