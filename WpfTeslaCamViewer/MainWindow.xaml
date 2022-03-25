@@ -4,10 +4,17 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:wpf="clr-namespace:LibVLCSharp.WPF;assembly=LibVLCSharp.WPF"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
         Title="WpfTeslaCamViewer" Height="720" Width="1280" Loaded="Window_Loaded"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        TextElement.FontSize="13"
+        TextOptions.TextFormattingMode="Ideal" 
+        TextOptions.TextRenderingMode="Auto"        
+        Background="{DynamicResource MaterialDesignPaper}"
+        FontFamily="{DynamicResource MaterialDesignFont}"
         DataContext="{Binding RelativeSource={RelativeSource Self}}">
-    <Grid Background="#666">
+    <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*" />
             <ColumnDefinition Width="0.01*" />
@@ -23,30 +30,56 @@
         <wpf:VideoView x:Name="videoViewFront" Grid.Row="0" Grid.Column="2"/>
         <wpf:VideoView x:Name="videoViewRightRepeater" Grid.Row="0" Grid.Column="4"/>
         <wpf:VideoView x:Name="videoViewRear" Grid.Row="1" Grid.Column="2"/>
-        <StackPanel Grid.Row="1" Grid.Column="0">
-            <Button x:Name="btn_OpenFolder" Content="Select TeslaCam Folder" Click="btn_OpenFolder_Click" Margin="8" FontSize="16"/>
-            <Label x:Name="lbl_DebugInfo" />
-            <Label Content="Playback speed:"/>
-            <StackPanel Orientation="Horizontal" Margin="8">
-                <Button x:Name="btn_SlowDown" Content="-" Click="btn_SlowDown_Click" MinWidth="30" />
-                <Label x:Name="lbl_playbackspeed" Content="1x" HorizontalAlignment="Center" Margin="8,0" />
-                <Button x:Name="btn_SpeedUp" Content="+" Click="btn_SpeedUp_Click" MinWidth="30"/>
+        <ScrollViewer Grid.Row="1" Grid.Column="0" VerticalScrollBarVisibility="Auto">
+        <Grid Margin="8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Button x:Name="btn_OpenFolder" Content="Select TeslaCam Folder" Click="btn_OpenFolder_Click" Margin="8" FontSize="16" Padding="8">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="10"></Setter>
+                    </Style>
+                </Button.Resources>
+            </Button>
+            <Label x:Name="lbl_DebugInfo" Grid.Row="1" />
+            <Label Content="Playback speed:" Margin="8" Grid.Row="2"/>
+            <StackPanel Orientation="Horizontal" Margin="8" Grid.Row="3" HorizontalAlignment="Center">
+                <Button x:Name="btn_SlowDownMore" Content="- 0.25x " MinWidth="80" Margin="4" Click="btn_SlowDownMore_Click"/>
+                <Button x:Name="btn_SlowDown" Content="- 0.1x " Click="btn_SlowDown_Click" MinWidth="80" Margin="4"/>
+                <Label x:Name="lbl_playbackspeed" Content="1x" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4,0" FontSize="14" />
+                <Button x:Name="btn_SpeedUp" Content="+ 0.1x " Click="btn_SpeedUp_Click" MinWidth="80" Margin="4"/>
+                    <Button x:Name="btn_SpeedUpMore" Content="+ 0.25x " Margin="4" MinWidth="80" Click="btn_SpeedUpMore_Click"/>
             </StackPanel>
             <Slider x:Name="slider_progress" PreviewMouseDown="slider_progress_PreviewMouseDown" PreviewMouseUp="slider_progress_PreviewMouseUp" Value="{Binding Position}" Maximum="1" 
-                    SmallChange="0.01" TickFrequency="0.1" IsSnapToTickEnabled="False" IsMoveToPointEnabled="True" />
-            <Label Margin="8" x:Name="lbl_eventinfo" />
-        </StackPanel>
-        <StackPanel Grid.Column="4" Grid.Row="1" Background="#777" Margin="16">
-            <TextBlock Margin="8,8,8,0">Folder List</TextBlock>
-            <ComboBox Margin="8" x:Name="cmbFolderList" SelectionChanged="CmbFolderList_OnSelectionChanged">
-                
-            </ComboBox>
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Margin="8">Clips</TextBlock>
+                    SmallChange="0.01" TickFrequency="0.1" IsSnapToTickEnabled="False" IsMoveToPointEnabled="True" Margin="8" Grid.Row="4"/>
+            <Label Margin="8" x:Name="lbl_eventinfo" Grid.Row="5"/>
+        </Grid>
+        </ScrollViewer>
+        <Grid Grid.Column="4" Grid.Row="1" Margin="16" Background="#11FFFFFF">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Label Margin="8,8,8,0">Folder List</Label>
+            <ComboBox Grid.Row="1" Margin="8" x:Name="cmbFolderList" SelectionChanged="CmbFolderList_OnSelectionChanged"/>
+            <StackPanel Orientation="Horizontal" Grid.Row="2">
+                <Label Margin="8">Clips</Label>
                 <Button x:Name="btn_GoBack" Content="&lt;" Click="btn_GoBack_Click" Margin="8" MinWidth="28" MinHeight="28" />
                 <Button x:Name="btn_GoForward" Content="&gt;" Click="btn_GoForward_Click" Margin="8" MinWidth="28" MinHeight="28" HorizontalAlignment="Right" />
             </StackPanel>
-            <ListBox  d:ItemsSource="{d:SampleData ItemCount=5}" Margin="8" Background="#777" x:Name="lbFileNames" SelectionChanged="LbFileNames_OnSelectionChanged" SelectionMode="Single"/>
-        </StackPanel>
+            <ListBox  d:ItemsSource="{d:SampleData ItemCount=15}" Background="#11FFFFFF" Grid.Row="3" Margin="8"
+                      x:Name="lbFileNames" SelectionChanged="LbFileNames_OnSelectionChanged" SelectionMode="Single"/>
+        </Grid>
     </Grid>
 </Window>
