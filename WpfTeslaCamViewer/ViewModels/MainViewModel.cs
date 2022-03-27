@@ -418,9 +418,6 @@ public class MainViewModel : INotifyPropertyChanged
         // If it's still empty, give up
         if (string.IsNullOrWhiteSpace(fileToPlay)) return;
 
-        // Setting this index plays the file now via the property setter
-        SelectedFileIndex = FileNames.IndexOf(fileToPlay);
-
         // Figure out where to jump to
         var dateString = fileToPlay.Replace($"{FolderNames[SelectedFolderIndex]}\\", "");
         Debug.WriteLine(dateString);
@@ -436,7 +433,9 @@ public class MainViewModel : INotifyPropertyChanged
             counter++;
             fileToPlay = FileNames.FirstOrDefault(x =>
                 x.Split('\\').Last().Contains(eventInfo.Timestamp.Value.AddMinutes(-counter).ToString("HH-mm")));
-            SelectedFileIndex = FileNames.IndexOf(fileToPlay);
+
+            if (string.IsNullOrWhiteSpace(fileToPlay))
+                return;
 
             dateString = fileToPlay.Replace($"{FolderNames[SelectedFolderIndex]}\\", "");
             Debug.WriteLine(dateString);
@@ -446,6 +445,9 @@ public class MainViewModel : INotifyPropertyChanged
             startOfVideo = beginningOfClip.TimeOfDay;
             eventStart = eventInfo.Timestamp.Value.TimeOfDay;
         }
+
+        // Setting this index plays the file now via the property setter
+        SelectedFileIndex = FileNames.IndexOf(fileToPlay);
 
         // Jump back {JumpBackTimeInSeconds} cuz the event timestamp is usually a little ahead
         var secondsToSkip = Math.Max((eventStart - startOfVideo).TotalSeconds - JumpBackTimeInSeconds, 0);
