@@ -11,9 +11,11 @@ public static class SerializationExtensions
         Converters =
         {
             // Order is important here - the Reason converter needs to go 
-            // before any other Enum converters
+            // before any other generic Enum converters
             new TeslaCamReasonStringConverter(),
-            new JsonStringEnumConverter()
+            new TeslaCamCameraConverter(),
+            new JsonStringEnumConverter(),
+            new CustomDateTimeConverter()
         },
         PropertyNameCaseInsensitive = true,
         NumberHandling = JsonNumberHandling.AllowReadingFromString
