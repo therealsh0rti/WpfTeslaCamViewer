@@ -1,6 +1,8 @@
 ﻿using System.Windows;
 using LibVLCSharp.Shared;
 using Microsoft.Extensions.DependencyInjection;
+using WpfTeslaCamViewer.Factories;
+using WpfTeslaCamViewer.ViewModels;
 
 namespace WpfTeslaCamViewer
 {
@@ -9,7 +11,7 @@ namespace WpfTeslaCamViewer
     /// </summary>
     public partial class App : Application
     {
-        private ServiceProvider serviceProvider;
+        private readonly ServiceProvider serviceProvider;
 
         public App()
         {
@@ -20,11 +22,9 @@ namespace WpfTeslaCamViewer
 
         private void ConfigureServices(ServiceCollection services)
         {
-            services.AddSingleton(_ =>
-            {
-                Core.Initialize();
-                return new LibVLC();
-            });
+            services.AddSingleton<ILibVlcFactory, LibVlcFactory>();
+            services.AddSingleton<IMediaPlayerFactory, MediaPlayerFactory>();
+            services.AddSingleton<MainViewModel>();
             services.AddSingleton<MainWindow>();
         }
 

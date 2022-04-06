@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Text;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace WpfTeslaCamViewer
@@ -16,6 +15,7 @@ namespace WpfTeslaCamViewer
     }
 
     public enum TeslaCamCamera { 
+        Unknown = -1,
         //Source: teslamotorsclub.com - Feel free to correct
         FrontMain = 0, 
         FrontWide = 1, 
@@ -25,12 +25,12 @@ namespace WpfTeslaCamViewer
         LeftPillar = 5, 
         RightPillar = 6,
         Rear = 7,
-        Cabin = 8,
+        Cabin = 8
     }
 
     public class TeslaCamEventInfo
     {
-        public DateTime Timestamp { get; set; }
+        public DateTime? Timestamp { get; set; }
         public string? City { get; set; }
         [JsonPropertyName("est_lat")]
         public float Latitude { get; set; }
